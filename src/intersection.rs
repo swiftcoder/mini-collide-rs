@@ -1,4 +1,4 @@
-use crate::{Plane, Ray, Sphere};
+use crate::{Plane, Ray, Sphere, Triangle};
 use mini_math::Vector;
 
 /// Trait for determining whether two shapes intersect with one another.
@@ -53,6 +53,32 @@ impl Intersection<Sphere> for Sphere {
     fn intersects(&self, sphere: &Sphere) -> bool {
         let combined_radius = self.radius + sphere.radius;
         (self.center - sphere.center).magnitude_squared() <= combined_radius * combined_radius
+    }
+}
+
+impl Intersection<Sphere> for Triangle {
+    fn intersects(&self, sphere: &Sphere) -> bool {
+        let plane = Plane::from(self);
+
+        let p = plane.point_closest_to(sphere.center);
+        let distance_from_plane_squared = (p - sphere.center).magnitude_squared();
+
+        if distance_from_plane_squared > sphere.radius * sphere.radius {
+            return false;
+        }
+
+        let radius_on_plane = (sphere.radius * sphere.radius - distance_from_plane_squared).sqrt();
+        let coordinates = self.barycentric_coordinates(p);
+
+        coordinates.x > -radius_on_plane
+            && coordinates.y > -radius_on_plane
+            && coordinates.z > -radius_on_plane
+    }
+}
+
+impl Intersection<Triangle> for Sphere {
+    fn intersects(&self, triangle: &Triangle) -> bool {
+        triangle.intersects(self)
     }
 }
 
@@ -123,5 +149,47 @@ mod tests {
         let sphere2 = Sphere::new(Point::new(0.0, 0.0, 0.0), 7.0);
         assert!(sphere1.intersects(&sphere2));
         assert!(sphere2.intersects(&sphere1));
+    }
+
+    #[test]
+    fn test_triangle_sphere_intersects() {
+        let triangle = Triangle::new(
+            Point::new(-1.0, 0.0, 0.0),
+            Point::new(1.0, 0.0, 0.0),
+            Point::new(0.0, 0.0, 1.0),
+        );
+
+        // distance from plane in the positive direction
+        let sphere = Sphere::new(Point::new(0.0, 1.0, 0.0), 0.5);
+        assert!(!triangle.intersects(&sphere));
+        assert!(!sphere.intersects(&triangle));
+
+        // distance from plane in the negative direction
+        let sphere = Sphere::new(Point::new(0.0, -1.0, 0.0), 0.5);
+        assert!(!triangle.intersects(&sphere));
+        assert!(!sphere.intersects(&triangle));
+
+        // distance from the plane in the direction of each edge
+        let sphere = Sphere::new(Point::new(0.0, 0.0, -3.0), 0.5);
+        assert!(!triangle.intersects(&sphere));
+        assert!(!sphere.intersects(&triangle));
+
+        let sphere = Sphere::new(Point::new(3.0, 0.0, 3.0), 0.5);
+        assert!(!triangle.intersects(&sphere));
+        assert!(!sphere.intersects(&triangle));
+
+        let sphere = Sphere::new(Point::new(-3.0, 0.0, 3.0), 0.5);
+        assert!(!triangle.intersects(&sphere));
+        assert!(!sphere.intersects(&triangle));
+
+        // diagonally from an edge
+        let sphere = Sphere::new(Point::new(0.0, 0.3, -0.3), 0.5);
+        assert!(triangle.intersects(&sphere));
+        assert!(sphere.intersects(&triangle));
+
+        // in the middle of the triangle
+        let sphere = Sphere::new(Point::new(0.0, 0.0, 0.0), 0.5);
+        assert!(triangle.intersects(&sphere));
+        assert!(sphere.intersects(&triangle));
     }
 }

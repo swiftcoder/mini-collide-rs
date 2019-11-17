@@ -1,6 +1,7 @@
 use mini_math::{Point, Vector};
 
 /// An infinite ray.
+#[derive(Debug)]
 pub struct Ray {
     /// The starting point of the ray.
     pub origin: Point,

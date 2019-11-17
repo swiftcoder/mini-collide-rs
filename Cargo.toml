@@ -1,6 +1,6 @@
 [package]
 name = "mini-collide"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Tristam MacDonald <tristam@trist.am>"]
 license = "Apache-2.0"
 description = "Lightweight collision routines for 3D graphics"
@@ -12,4 +12,4 @@ documentation = "https://docs.rs/mini-collide"
 readme = "README.md"
 
 [dependencies]
-mini-math = "0.1.2"
+mini-math = "0.1.3"

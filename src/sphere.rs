@@ -1,6 +1,7 @@
 use mini_math::Point;
 
 /// A sphere
+#[derive(Debug)]
 pub struct Sphere {
     /// The center of the sphere
     pub center: Point,
