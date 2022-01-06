@@ -1,10 +1,10 @@
 [package]
 name = "mini-collide"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Tristam MacDonald <tristam@trist.am>"]
 license = "Apache-2.0"
 description = "Lightweight collision routines for 3D graphics"
-edition = "2018"
+edition = "2021"
 
 homepage = "https://github.com/swiftcoder/mini-collide-rs"
 repository = "https://github.com/swiftcoder/mini-collide-rs"
@@ -12,4 +12,4 @@ documentation = "https://docs.rs/mini-collide"
 readme = "README.md"
 
 [dependencies]
-mini-math = "0.1.3"
+mini-math = "0.2"
