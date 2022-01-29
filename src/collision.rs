@@ -1,14 +1,14 @@
-use crate::{LineSegment, Plane, Ray, Sphere, Triangle};
+use crate::{ClosestPoint, LineSegment, Plane, Ray, Sphere, Triangle};
 use mini_math::{NearlyEqual, Point, Vector3};
 
-/// The result of a collision.
+/// The result of a collision
 #[derive(PartialEq, Debug)]
 pub struct Contact {
-    /// The point at which the collision occurs.
+    /// The point at which the collision occurs
     pub point: Point,
-    /// The surface normal at the point of collision.
+    /// The surface normal at the point of collision
     pub normal: Vector3,
-    /// The distance by which the colliding shapes overlap.
+    /// The distance by which the colliding shapes overlap
     pub overlap: f32,
 }
 
@@ -30,9 +30,9 @@ impl Contact {
     }
 }
 
-/// Trait for determining the collision between two shapes.
+/// Trait for determining the collision between two shapes
 pub trait Collision<Rhs> {
-    /// Whether this shape collides with the other, and where.
+    /// Whether this shape collides with the other, and where
     fn collides(&self, rhs: &Rhs) -> Option<Contact>;
 }
 
@@ -60,13 +60,13 @@ impl Collision<Triangle> for Sphere {
     fn collides(&self, triangle: &Triangle) -> Option<Contact> {
         let plane = Plane::from(triangle);
 
-        let p = plane.point_closest_to(self.center);
+        let p = plane.closest_point(&self.center);
         let distance_from_plane_squared = (p - self.center).magnitude_squared();
 
         if distance_from_plane_squared > self.radius * self.radius {
             None
         } else {
-            let q = triangle.point_closest_to(self.center);
+            let q = triangle.closest_point(&self.center);
             let diff = q - self.center;
             let overlap = self.radius - diff.magnitude();
             if overlap < 0.0 {

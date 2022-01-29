@@ -1,26 +1,34 @@
-use crate::{Distance, LineSegment, Plane, Ray, Sphere, Triangle};
+use crate::{Capsule, ClosestPoint, Distance, LineSegment, Plane, Ray, Sphere, Triangle};
 use mini_math::Vector3;
 
-/// Trait for determining whether two shapes intersect with one another.
+/// Trait for determining whether two shapes intersect with one another
 pub trait Intersection<Rhs> {
-    /// Whether this shape intersect with the other.
+    /// Whether this shape intersect with the other
     fn intersects(&self, rhs: &Rhs) -> bool;
 }
 
 impl Intersection<Ray> for Sphere {
     fn intersects(&self, ray: &Ray) -> bool {
-        let a = ray.direction.magnitude_squared();
-        let b = 2.0
-            * (Vector3::from(ray.origin).dot(ray.direction)
-                - ray.direction.dot(self.center.into()));
-        let c = (self.center - ray.origin).magnitude_squared() - self.radius * self.radius;
-        b * b - 4.0 * a * c >= 0.0
+        let p = ray.closest_point(&self.center);
+        self.distance(&p) < 0.0
     }
 }
 
 impl Intersection<Sphere> for Ray {
     fn intersects(&self, sphere: &Sphere) -> bool {
         sphere.intersects(self)
+    }
+}
+
+impl Intersection<Capsule> for Ray {
+    fn intersects(&self, rhs: &Capsule) -> bool {
+        self.distance(rhs) < 0.0
+    }
+}
+
+impl Intersection<Ray> for Capsule {
+    fn intersects(&self, rhs: &Ray) -> bool {
+        rhs.intersects(self)
     }
 }
 
@@ -40,27 +48,8 @@ impl Intersection<Plane> for Ray {
 
 impl Intersection<LineSegment> for Sphere {
     fn intersects(&self, line: &LineSegment) -> bool {
-        let direction = line.end - line.start;
-        let diff = self.center - line.end;
-        let t = direction.dot(diff);
-        let closest = if t >= 0.0 {
-            line.end
-        } else {
-            let diff = self.center - line.start;
-            let t = direction.dot(diff);
-            if t <= 0.0 {
-                line.start
-            } else {
-                let length_squared = direction.magnitude_squared();
-                if length_squared > 0.0 {
-                    line.start + direction * (t / length_squared)
-                } else {
-                    line.start
-                }
-            }
-        };
-
-        (self.center - closest).magnitude_squared() - self.radius * self.radius <= 0.0
+        let p = line.closest_point(&self.center);
+        self.distance(&p) < 0.0
     }
 }
 
@@ -72,7 +61,7 @@ impl Intersection<Sphere> for LineSegment {
 
 impl Intersection<Sphere> for Plane {
     fn intersects(&self, sphere: &Sphere) -> bool {
-        self.distance(sphere.center).abs() <= sphere.radius
+        self.distance(&sphere.center).abs() <= sphere.radius
     }
 }
 
@@ -93,7 +82,7 @@ impl Intersection<Sphere> for Triangle {
     fn intersects(&self, sphere: &Sphere) -> bool {
         let plane = Plane::from(self);
 
-        let p = plane.point_closest_to(sphere.center);
+        let p = plane.closest_point(&sphere.center);
         let distance_from_plane_squared = (p - sphere.center).magnitude_squared();
 
         if distance_from_plane_squared > sphere.radius * sphere.radius {
