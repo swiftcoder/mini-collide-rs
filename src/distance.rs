@@ -2,13 +2,13 @@ use mini_math::{Point, Vector3};
 
 use crate::{Capsule, ClosestPoint, Line, LineSegment, Plane, Ray, Sphere};
 
+/// Trait for finding the distance between two objects
 pub trait Distance<Other> {
     /// The distance between two objects
     fn distance(&self, other: &Other) -> f32;
 }
 
 impl Distance<Point> for Line {
-    /// Returns the distance between the line and a given point.
     fn distance(&self, p: &Point) -> f32 {
         let cross = self.direction.cross(*p - self.point);
         cross.magnitude()
@@ -16,7 +16,6 @@ impl Distance<Point> for Line {
 }
 
 impl Distance<Line> for Line {
-    /// Returns the distance between the line and another line.
     fn distance(&self, line: &Line) -> f32 {
         let w = self.point - line.point;
         let b = self.direction.dot(line.direction);
@@ -36,7 +35,6 @@ impl Distance<Line> for Line {
 }
 
 impl Distance<Point> for LineSegment {
-    /// Returns the distance between the line segment and a given point.
     fn distance(&self, p: &Point) -> f32 {
         let q = self.closest_point(p);
 
@@ -45,14 +43,12 @@ impl Distance<Point> for LineSegment {
 }
 
 impl Distance<LineSegment> for LineSegment {
-    /// Returns the distance between the line segment and another line segment.
     fn distance(&self, l: &LineSegment) -> f32 {
         self.distance(&l.closest_point(self))
     }
 }
 
 impl Distance<Point> for Ray {
-    /// Returns the distance between the ray and a given point.
     fn distance(&self, p: &Point) -> f32 {
         let q = self.closest_point(p);
         (*p - q).magnitude()
@@ -60,42 +56,36 @@ impl Distance<Point> for Ray {
 }
 
 impl Distance<Ray> for Ray {
-    /// Returns the distance between the ray and another ray.
     fn distance(&self, r: &Ray) -> f32 {
         self.distance(&r.closest_point(self))
     }
 }
 
 impl Distance<Line> for Ray {
-    /// Returns the distance between the ray and a line.
     fn distance(&self, l: &Line) -> f32 {
         self.distance(&l.closest_point(self))
     }
 }
 
 impl Distance<LineSegment> for Ray {
-    /// Returns the distance between the ray and a line segment.
     fn distance(&self, l: &LineSegment) -> f32 {
         self.distance(&l.closest_point(self))
     }
 }
 
 impl Distance<Point> for Plane {
-    /// Returns the signed distance between the plane and a given point.
     fn distance(&self, p: &Point) -> f32 {
         self.normal.dot(Vector3::from(*p)) - self.d
     }
 }
 
 impl Distance<Point> for Sphere {
-    /// Returns the distance between the sphere and a given point.
     fn distance(&self, p: &Point) -> f32 {
         (*p - self.center).magnitude() - self.radius
     }
 }
 
 impl Distance<Point> for Capsule {
-    /// Returns the distance between the sphere and a given point.
     fn distance(&self, p: &Point) -> f32 {
         self.axis.distance(p) - self.radius
     }

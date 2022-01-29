@@ -2,6 +2,7 @@ use mini_math::Point;
 
 use crate::{Distance, Line, LineSegment, Plane, Ray, Sphere, Triangle};
 
+/// Trait for finding the closest point to another object
 pub trait ClosestPoint<Other> {
     /// The closest point to another object
     fn closest_point(&self, other: &Other) -> Point;

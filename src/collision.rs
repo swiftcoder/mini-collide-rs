@@ -1,14 +1,14 @@
 use crate::{ClosestPoint, LineSegment, Plane, Ray, Sphere, Triangle};
 use mini_math::{NearlyEqual, Point, Vector3};
 
-/// The result of a collision.
+/// The result of a collision
 #[derive(PartialEq, Debug)]
 pub struct Contact {
-    /// The point at which the collision occurs.
+    /// The point at which the collision occurs
     pub point: Point,
-    /// The surface normal at the point of collision.
+    /// The surface normal at the point of collision
     pub normal: Vector3,
-    /// The distance by which the colliding shapes overlap.
+    /// The distance by which the colliding shapes overlap
     pub overlap: f32,
 }
 
@@ -30,9 +30,9 @@ impl Contact {
     }
 }
 
-/// Trait for determining the collision between two shapes.
+/// Trait for determining the collision between two shapes
 pub trait Collision<Rhs> {
-    /// Whether this shape collides with the other, and where.
+    /// Whether this shape collides with the other, and where
     fn collides(&self, rhs: &Rhs) -> Option<Contact>;
 }
 

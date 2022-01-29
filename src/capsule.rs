@@ -2,6 +2,7 @@ use mini_math::Point;
 
 use crate::LineSegment;
 
+/// A cylinder capped with a half-sphere at each end
 #[derive(Debug)]
 pub struct Capsule {
     /// The central axis of the capsule

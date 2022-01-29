@@ -1,7 +1,7 @@
 use crate::Plane;
 use mini_math::{Point, Vector3};
 
-/// A triangle.
+/// A triangle
 #[derive(Debug)]
 pub struct Triangle {
     pub a: Point,
@@ -10,13 +10,13 @@ pub struct Triangle {
 }
 
 impl Triangle {
-    /// Construct a new triangle from three vertices.
+    /// Construct a new triangle from three vertices
     pub fn new(a: Point, b: Point, c: Point) -> Self {
         Self { a, b, c }
     }
 
-    /// Barycentric coordinates of the given point.
-    pub fn barycentric_coordinates(&self, p: Point) -> Vector3 {
+    /// Barycentric coordinates of the given point
+    pub(crate) fn barycentric_coordinates(&self, p: Point) -> Vector3 {
         let e0 = self.b - self.a;
         let e1 = self.c - self.a;
         let e2 = p - self.a;
@@ -35,7 +35,7 @@ impl Triangle {
     }
 
     /// Test if a coplanar point is inside the triangle
-    pub fn coplanar_point_inside(&self, p: Point) -> bool {
+    pub(crate) fn coplanar_point_inside(&self, p: Point) -> bool {
         let plane = Plane::from(self);
 
         let edge_cross = (self.b - self.a).cross(p - self.a);
