@@ -1,4 +1,4 @@
-use crate::{Distance, LineSegment, Plane, Ray, Sphere, Triangle};
+use crate::{ClosestPoint, Distance, LineSegment, Plane, Ray, Sphere, Triangle};
 use mini_math::Vector3;
 
 /// Trait for determining whether two shapes intersect with one another.
@@ -72,7 +72,7 @@ impl Intersection<Sphere> for LineSegment {
 
 impl Intersection<Sphere> for Plane {
     fn intersects(&self, sphere: &Sphere) -> bool {
-        self.distance(sphere.center).abs() <= sphere.radius
+        self.distance(&sphere.center).abs() <= sphere.radius
     }
 }
 
@@ -93,7 +93,7 @@ impl Intersection<Sphere> for Triangle {
     fn intersects(&self, sphere: &Sphere) -> bool {
         let plane = Plane::from(self);
 
-        let p = plane.point_closest_to(sphere.center);
+        let p = plane.closest_point(&sphere.center);
         let distance_from_plane_squared = (p - sphere.center).magnitude_squared();
 
         if distance_from_plane_squared > sphere.radius * sphere.radius {

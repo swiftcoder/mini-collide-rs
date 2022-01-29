@@ -1,4 +1,4 @@
-use crate::{LineSegment, Plane, Ray, Sphere, Triangle};
+use crate::{ClosestPoint, LineSegment, Plane, Ray, Sphere, Triangle};
 use mini_math::{NearlyEqual, Point, Vector3};
 
 /// The result of a collision.
@@ -60,13 +60,13 @@ impl Collision<Triangle> for Sphere {
     fn collides(&self, triangle: &Triangle) -> Option<Contact> {
         let plane = Plane::from(triangle);
 
-        let p = plane.point_closest_to(self.center);
+        let p = plane.closest_point(&self.center);
         let distance_from_plane_squared = (p - self.center).magnitude_squared();
 
         if distance_from_plane_squared > self.radius * self.radius {
             None
         } else {
-            let q = triangle.point_closest_to(self.center);
+            let q = triangle.closest_point(&self.center);
             let diff = q - self.center;
             let overlap = self.radius - diff.magnitude();
             if overlap < 0.0 {

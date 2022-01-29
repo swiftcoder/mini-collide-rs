@@ -1,6 +1,6 @@
 use mini_math::Point;
 
-use crate::{Line, LineSegment, Ray, Sphere};
+use crate::{Distance, Line, LineSegment, Plane, Ray, Sphere, Triangle};
 
 pub trait ClosestPoint<Other> {
     /// The closest point to another object
@@ -118,6 +118,41 @@ impl ClosestPoint<LineSegment> for LineSegment {
     }
 }
 
+impl ClosestPoint<Point> for Plane {
+    fn closest_point(&self, other: &Point) -> Point {
+        let distance = self.distance(other);
+        *other - self.normal * distance
+    }
+}
+
+impl ClosestPoint<Point> for Triangle {
+    fn closest_point(&self, other: &Point) -> Point {
+        let plane = Plane::from(self);
+        let q = plane.closest_point(other);
+
+        let coordinates = self.barycentric_coordinates(q);
+        if coordinates.x >= 0.0 && coordinates.y >= 0.0 && coordinates.z >= 0.0 {
+            return q;
+        }
+
+        let p0 = Self::point_closest_to_edge(self.a, self.b, *other);
+        let p1 = Self::point_closest_to_edge(self.b, self.c, *other);
+        let p2 = Self::point_closest_to_edge(self.c, self.a, *other);
+
+        let d0 = (p0 - *other).magnitude_squared();
+        let d1 = (p1 - *other).magnitude_squared();
+        let d2 = (p2 - *other).magnitude_squared();
+
+        if d0 < d1 && d0 < d2 {
+            p0
+        } else if d1 < d0 && d1 < d2 {
+            p1
+        } else {
+            p2
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use mini_math::Vector3;
@@ -167,5 +202,38 @@ mod tests {
 
         let l = Line::new(Point::new(0.0, 5.0, 5.0), Vector3::new(0.0, 1.0, 0.0));
         assert_eq!(ray.closest_point(&l), Point::new(0.0, 0.0, 5.0));
+    }
+
+    #[test]
+    fn test_plane_point() {
+        let plane = Plane::from_points(
+            Point::new(-1.0, 0.0, -1.0),
+            Point::new(1.0, 0.0, -1.0),
+            Point::new(0.0, 0.0, 1.0),
+        );
+
+        let p = Point::new(2.0, 1.0, 3.0);
+        assert_eq!(plane.closest_point(&p), Point::new(2.0, 0.0, 3.0));
+
+        let p = Point::new(-2.0, -1.0, -3.0);
+        assert_eq!(plane.closest_point(&p), Point::new(-2.0, 0.0, -3.0));
+    }
+
+    #[test]
+    fn test_triangle_point() {
+        let triangle = Triangle::new(
+            Point::new(-1.0, 0.0, -1.0),
+            Point::new(1.0, 0.0, -1.0),
+            Point::new(0.0, 0.0, 1.0),
+        );
+
+        let p = Point::new(0.0, 1.0, 0.0);
+        assert_eq!(triangle.closest_point(&p), Point::new(0.0, 0.0, 0.0));
+
+        let p = Point::new(0.0, 1.0, 2.0);
+        assert_eq!(triangle.closest_point(&p), Point::new(0.0, 0.0, 1.0));
+
+        let p = Point::new(0.0, -1.0, -2.0);
+        assert_eq!(triangle.closest_point(&p), Point::new(0.0, 0.0, -1.0));
     }
 }
