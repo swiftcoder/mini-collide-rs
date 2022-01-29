@@ -42,6 +42,12 @@ impl Distance<Point> for LineSegment {
     }
 }
 
+impl Distance<Line> for LineSegment {
+    fn distance(&self, other: &Line) -> f32 {
+        other.distance(&self.closest_point(other))
+    }
+}
+
 impl Distance<LineSegment> for LineSegment {
     fn distance(&self, l: &LineSegment) -> f32 {
         self.distance(&l.closest_point(self))
@@ -73,6 +79,12 @@ impl Distance<LineSegment> for Ray {
     }
 }
 
+impl Distance<Ray> for LineSegment {
+    fn distance(&self, other: &Ray) -> f32 {
+        other.distance(self)
+    }
+}
+
 impl Distance<Point> for Plane {
     fn distance(&self, p: &Point) -> f32 {
         self.normal.dot(Vector3::from(*p)) - self.d
@@ -88,6 +100,48 @@ impl Distance<Point> for Sphere {
 impl Distance<Point> for Capsule {
     fn distance(&self, p: &Point) -> f32 {
         self.axis.distance(p) - self.radius
+    }
+}
+
+impl Distance<Line> for Capsule {
+    fn distance(&self, other: &Line) -> f32 {
+        self.axis.distance(other) - self.radius
+    }
+}
+
+impl Distance<Capsule> for Line {
+    fn distance(&self, other: &Capsule) -> f32 {
+        other.distance(self)
+    }
+}
+
+impl Distance<Ray> for Capsule {
+    fn distance(&self, other: &Ray) -> f32 {
+        self.axis.distance(other) - self.radius
+    }
+}
+
+impl Distance<Capsule> for Ray {
+    fn distance(&self, other: &Capsule) -> f32 {
+        other.distance(self)
+    }
+}
+
+impl Distance<Sphere> for Capsule {
+    fn distance(&self, other: &Sphere) -> f32 {
+        self.axis.distance(&other.center) - self.radius - other.radius
+    }
+}
+
+impl Distance<Capsule> for Sphere {
+    fn distance(&self, other: &Capsule) -> f32 {
+        other.distance(self)
+    }
+}
+
+impl Distance<Capsule> for Capsule {
+    fn distance(&self, other: &Capsule) -> f32 {
+        self.axis.distance(&other.axis) - self.radius - other.radius
     }
 }
 
@@ -185,6 +239,20 @@ mod tests {
 
         let p = Point::new(0.0, 5.0, 5.0);
         assert_eq!(line.distance(&p), 5.0);
+    }
+
+    #[test]
+    fn test_line_segment_line() {
+        let line = LineSegment::new(Point::new(0.0, 0.0, 0.0), Point::new(0.0, 0.0, 10.0));
+
+        let l = Line::new(Point::new(0.0, 5.0, 0.0), Vector3::new(0.0, 0.0, 1.0));
+        assert_eq!(line.distance(&l), 5.0);
+
+        let l = Line::new(Point::new(0.0, 0.0, -5.0), Vector3::new(0.0, 0.0, -1.0));
+        assert_eq!(line.distance(&l), 0.0);
+
+        let l = Line::new(Point::new(0.0, 5.0, -5.0), Vector3::new(0.0, 1.0, 0.0));
+        assert_eq!(line.distance(&l), 5.0);
     }
 
     #[test]

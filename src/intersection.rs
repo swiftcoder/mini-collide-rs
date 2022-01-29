@@ -1,4 +1,4 @@
-use crate::{ClosestPoint, Distance, LineSegment, Plane, Ray, Sphere, Triangle};
+use crate::{Capsule, ClosestPoint, Distance, LineSegment, Plane, Ray, Sphere, Triangle};
 use mini_math::Vector3;
 
 /// Trait for determining whether two shapes intersect with one another
@@ -17,6 +17,18 @@ impl Intersection<Ray> for Sphere {
 impl Intersection<Sphere> for Ray {
     fn intersects(&self, sphere: &Sphere) -> bool {
         sphere.intersects(self)
+    }
+}
+
+impl Intersection<Capsule> for Ray {
+    fn intersects(&self, rhs: &Capsule) -> bool {
+        self.distance(rhs) < 0.0
+    }
+}
+
+impl Intersection<Ray> for Capsule {
+    fn intersects(&self, rhs: &Ray) -> bool {
+        rhs.intersects(self)
     }
 }
 

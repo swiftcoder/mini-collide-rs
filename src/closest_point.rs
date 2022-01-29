@@ -110,6 +110,13 @@ impl ClosestPoint<Point> for LineSegment {
     }
 }
 
+impl ClosestPoint<Line> for LineSegment {
+    fn closest_point(&self, other: &Line) -> Point {
+        let p = other.closest_point(&Line::from_points(self.start, self.end));
+        self.closest_point(&p)
+    }
+}
+
 impl ClosestPoint<LineSegment> for LineSegment {
     fn closest_point(&self, other: &LineSegment) -> Point {
         let p = Line::from_points(other.start, other.end)
