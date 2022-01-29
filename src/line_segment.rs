@@ -1,4 +1,4 @@
-use crate::{Distance, Line};
+use crate::{closest_point::ClosestPoint, Distance};
 use mini_math::Point;
 
 /// A finite line segment.
@@ -15,27 +15,12 @@ impl LineSegment {
     pub fn new(start: Point, end: Point) -> Self {
         Self { start, end }
     }
-
-    pub(crate) fn clip_point_to_segment(&self, p: Point) -> Point {
-        let mut direction = self.end - self.start;
-        let length = direction.magnitude();
-        direction /= length;
-
-        let dot = (p - self.start).dot(direction);
-
-        if dot < 0.0 {
-            self.start
-        } else {
-            self.start + direction * dot.min(length)
-        }
-    }
 }
 
 impl Distance<Point> for LineSegment {
     /// Returns the distance between the line segment and a given point.
     fn distance(&self, p: Point) -> f32 {
-        let q = Line::from_points(self.start, self.end).closest_point(p);
-        let q = self.clip_point_to_segment(q);
+        let q = self.closest_point(&p);
 
         (p - q).magnitude()
     }
@@ -44,12 +29,7 @@ impl Distance<Point> for LineSegment {
 impl Distance<LineSegment> for LineSegment {
     /// Returns the distance between the line segment and another line segment.
     fn distance(&self, l: LineSegment) -> f32 {
-        let p = Line::from_points(l.start, l.end)
-            .closest_point_to_line(&Line::from_points(self.start, self.end));
-
-        let p = l.clip_point_to_segment(p);
-
-        self.distance(p).min(l.distance(self.start))
+        self.distance(l.closest_point(self))
     }
 }
 

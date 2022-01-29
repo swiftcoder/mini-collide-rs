@@ -1,4 +1,4 @@
-use crate::{Distance, Line, LineSegment};
+use crate::{closest_point::ClosestPoint, Distance, Line, LineSegment};
 use mini_math::{Point, Vector3};
 
 /// An infinite ray.
@@ -15,22 +15,12 @@ impl Ray {
     pub fn new(origin: Point, direction: Vector3) -> Self {
         Self { origin, direction }
     }
-
-    pub(crate) fn clip_point_to_ray(&self, p: Point) -> Point {
-        let dot = (p - self.origin).dot(self.direction);
-
-        if dot < 0.0 {
-            self.origin
-        } else {
-            self.origin + self.direction * dot
-        }
-    }
 }
 
 impl Distance<Point> for Ray {
     /// Returns the distance between the ray and a given point.
     fn distance(&self, p: Point) -> f32 {
-        let q = self.clip_point_to_ray(p);
+        let q = self.closest_point(&p);
         (p - q).magnitude()
     }
 }
@@ -38,31 +28,21 @@ impl Distance<Point> for Ray {
 impl Distance<Ray> for Ray {
     /// Returns the distance between the ray and another ray.
     fn distance(&self, r: Ray) -> f32 {
-        let p = Line::new(r.origin, r.direction)
-            .closest_point_to_line(&Line::new(self.origin, self.direction));
-        let p = r.clip_point_to_ray(p);
-
-        self.distance(p)
+        self.distance(r.closest_point(self))
     }
 }
 
 impl Distance<Line> for Ray {
     /// Returns the distance between the ray and a line.
     fn distance(&self, l: Line) -> f32 {
-        let p = l.closest_point_to_line(&Line::new(self.origin, self.direction));
-
-        self.distance(p).min(l.distance(self.origin))
+        self.distance(l.closest_point(self))
     }
 }
 
 impl Distance<LineSegment> for Ray {
     /// Returns the distance between the ray and a line segment.
     fn distance(&self, l: LineSegment) -> f32 {
-        let p = Line::from_points(l.start, l.end)
-            .closest_point_to_line(&Line::new(self.origin, self.direction));
-        let p = l.clip_point_to_segment(p);
-
-        self.distance(p).min(l.distance(self.origin))
+        self.distance(l.closest_point(self))
     }
 }
 

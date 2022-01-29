@@ -23,27 +23,6 @@ impl Line {
             direction: (end - start).normalized(),
         }
     }
-
-    pub(crate) fn closest_point(&self, p: Point) -> Point {
-        let dot = self.direction.dot(p - self.point);
-        self.point + self.direction * dot
-    }
-
-    pub(crate) fn closest_point_to_line(&self, line: &Line) -> Point {
-        let w = self.point - line.point;
-        let b = self.direction.dot(line.direction);
-        let d = self.direction.dot(w);
-        let e = line.direction.dot(w);
-        let d_p = 1.0 - b * b;
-
-        if d_p < std::f32::EPSILON {
-            return self.point;
-        }
-
-        let sc = (b * e - d) / d_p;
-
-        self.point + self.direction * sc
-    }
 }
 
 impl Distance<Point> for Line {
@@ -101,22 +80,5 @@ mod tests {
 
         let l = Line::from_points(Point::new(0.0, 5.0, 0.0), Point::new(25.0, 5.0, 0.0));
         assert_eq!(line.distance(&l), 5.0);
-    }
-
-    #[test]
-    fn test_closest_point_to_line() {
-        let line = Line::from_points(Point::new(0.0, 0.0, 0.0), Point::new(0.0, 0.0, 10.0));
-
-        let l = Line::from_points(Point::new(0.0, 0.0, 1.0), Point::new(0.0, 10.0, 10.0));
-        assert_eq!(line.closest_point_to_line(&l), Point::new(0.0, 0.0, 1.0));
-
-        let l = Line::from_points(Point::new(0.0, 5.0, 5.0), Point::new(0.0, 5.0, 15.0));
-        assert_eq!(line.closest_point_to_line(&l), Point::new(0.0, 0.0, 0.0));
-
-        let l = Line::from_points(Point::new(0.0, 5.0, 0.0), Point::new(25.0, 5.0, 0.0));
-        assert_eq!(line.closest_point_to_line(&l), Point::new(0.0, 0.0, 0.0));
-
-        let l = Line::from_points(Point::new(0.0, 5.0, 10.0), Point::new(25.0, 5.0, 10.0));
-        assert_eq!(line.closest_point_to_line(&l), Point::new(0.0, 0.0, 10.0));
     }
 }

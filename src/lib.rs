@@ -1,5 +1,7 @@
 //! Collision primitives to accompany the mini-math crate.
 
+mod capsule;
+mod closest_point;
 mod collision;
 mod intersection;
 mod line;
@@ -10,6 +12,8 @@ mod sphere;
 mod traits;
 mod triangle;
 
+pub use capsule::*;
+pub use closest_point::*;
 pub use collision::*;
 pub use intersection::*;
 pub use line::*;
