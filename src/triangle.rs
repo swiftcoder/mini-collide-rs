@@ -58,19 +58,4 @@ impl Triangle {
 
         true
     }
-
-    pub(crate) fn point_closest_to_edge(e0: Point, e1: Point, p: Point) -> Point {
-        let edge = e1 - e0;
-        let edge_length = edge.magnitude();
-        let edge_direction = edge / edge_length;
-        let diff = p - e0;
-        let d = diff.dot(edge_direction);
-        if d < 0.0 {
-            e0
-        } else if d > edge_length {
-            e1
-        } else {
-            e0 + edge_direction * d
-        }
-    }
 }

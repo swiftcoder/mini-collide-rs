@@ -135,9 +135,9 @@ impl ClosestPoint<Point> for Triangle {
             return q;
         }
 
-        let p0 = Self::point_closest_to_edge(self.a, self.b, *other);
-        let p1 = Self::point_closest_to_edge(self.b, self.c, *other);
-        let p2 = Self::point_closest_to_edge(self.c, self.a, *other);
+        let p0 = LineSegment::new(self.a, self.b).closest_point(other);
+        let p1 = LineSegment::new(self.b, self.c).closest_point(other);
+        let p2 = LineSegment::new(self.c, self.a).closest_point(other);
 
         let d0 = (p0 - *other).magnitude_squared();
         let d1 = (p1 - *other).magnitude_squared();
