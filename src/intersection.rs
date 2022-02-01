@@ -114,16 +114,15 @@ impl Intersection<Ray> for Triangle {
             return false;
         }
 
-        let d = plane.normal.dot(Vector3::from(self.a));
-        let e = plane.normal.dot(Vector3::from(ray.origin));
-        let t = (e + d) / n_dot_r;
+        let d = plane.normal.dot(ray.origin - self.a);
+        let t = -d / n_dot_r;
 
         // early exit if triangle entirely behind ray
-        if t > 0.0 {
+        if t < 0.0 {
             return false;
         }
 
-        let intersection_point = ray.origin + ray.direction * -t;
+        let intersection_point = ray.origin + ray.direction * t;
         self.coplanar_point_inside(intersection_point)
     }
 }
@@ -148,16 +147,15 @@ impl Intersection<LineSegment> for Triangle {
             return false;
         }
 
-        let d = plane.normal.dot(Vector3::from(self.a));
-        let e = plane.normal.dot(Vector3::from(line.start));
-        let t = (e + d) / n_dot_r;
+        let d = plane.normal.dot(line.start - self.a);
+        let t = -d / n_dot_r;
 
         // early exit if triangle is entirely in fornt or behind of the line segment
-        if t > 0.0 || t < -length {
+        if t < 0.0 || t > length {
             return false;
         }
 
-        let intersection_point = line.start + direction * -t;
+        let intersection_point = line.start + direction * t;
         self.coplanar_point_inside(intersection_point)
     }
 }
@@ -329,6 +327,21 @@ mod tests {
             Point::new(-0.5, -1.0, 0.0),
             Vector3::new(0.5, 1.0, 0.0).normalized(),
         );
+        assert!(triangle.intersects(&ray));
+    }
+
+    #[test]
+    fn test_triangle_ray_intersects_2() {
+        let ray = Ray::new(
+            Point::new(0.0, 2.0, -6.0),
+            Vector3::new(0.0, 0.0, 1.0).normalized(),
+        );
+        let triangle = Triangle::new(
+            Point::new(2.0, 0.0, -1.25),
+            Point::new(0.0, 3.0, 2.5),
+            Point::new(-2.0, 0.0, -1.25),
+        );
+
         assert!(triangle.intersects(&ray));
     }
 
