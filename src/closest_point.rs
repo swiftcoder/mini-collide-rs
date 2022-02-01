@@ -1,6 +1,6 @@
-use mini_math::Point;
+use mini_math::{Point, Vector3};
 
-use crate::{Distance, Line, LineSegment, Plane, Ray, Sphere, Triangle};
+use crate::{Capsule, Distance, Line, LineSegment, Plane, Ray, Sphere, Triangle};
 
 /// Trait for finding the closest point to another object
 pub trait ClosestPoint<Other> {
@@ -54,6 +54,37 @@ impl ClosestPoint<Point> for Ray {
         } else {
             self.origin + self.direction * dot
         }
+    }
+}
+
+impl ClosestPoint<Sphere> for Ray {
+    fn closest_point(&self, other: &Sphere) -> Point {
+        self.closest_point(&other.center)
+    }
+}
+
+impl ClosestPoint<Ray> for Sphere {
+    fn closest_point(&self, other: &Ray) -> Point {
+        let p = other.closest_point(&self.center);
+        let diff = p - self.center;
+        let l = diff.magnitude();
+        self.center + (diff / l) * self.radius.min(l)
+    }
+}
+
+impl ClosestPoint<Capsule> for Ray {
+    fn closest_point(&self, other: &Capsule) -> Point {
+        self.closest_point(&other.axis)
+    }
+}
+
+impl ClosestPoint<Ray> for Capsule {
+    fn closest_point(&self, other: &Ray) -> Point {
+        let p = other.closest_point(&self.axis);
+        let q = self.axis.closest_point(other);
+        let diff = p - q;
+        let l = diff.magnitude();
+        q + (diff / l) * self.radius.min(l)
     }
 }
 
@@ -158,6 +189,25 @@ impl ClosestPoint<Point> for Triangle {
         } else {
             p2
         }
+    }
+}
+
+impl ClosestPoint<Ray> for Triangle {
+    fn closest_point(&self, other: &Ray) -> Point {
+        let plane = Plane::from(self);
+
+        let n_dot_r = plane.normal.dot(other.direction);
+        // early exit if ray parallel to plane
+        if n_dot_r.abs() < std::f32::EPSILON {
+            return self.closest_point(&other.origin);
+        }
+
+        let d = plane.normal.dot(Vector3::from(self.a));
+        let e = plane.normal.dot(Vector3::from(other.origin));
+        let t = (e + d) / n_dot_r;
+
+        let intersection_point = other.origin + other.direction * -t;
+        self.closest_point(&intersection_point)
     }
 }
 
