@@ -164,6 +164,21 @@ impl ClosestPoint<Point> for Plane {
     }
 }
 
+impl ClosestPoint<Ray> for Plane {
+    fn closest_point(&self, other: &Ray) -> Point {
+        let n_dot_r = self.normal.dot(other.direction);
+        // early exit if ray parallel to plane
+        if n_dot_r.abs() < std::f32::EPSILON {
+            return self.closest_point(&other.origin);
+        }
+
+        let e = self.normal.dot(Vector3::from(other.origin));
+        let t = (e + self.d) / n_dot_r;
+
+        other.origin + other.direction * -t
+    }
+}
+
 impl ClosestPoint<Point> for Triangle {
     fn closest_point(&self, other: &Point) -> Point {
         let plane = Plane::from(self);
@@ -202,9 +217,8 @@ impl ClosestPoint<Ray> for Triangle {
             return self.closest_point(&other.origin);
         }
 
-        let d = plane.normal.dot(Vector3::from(self.a));
         let e = plane.normal.dot(Vector3::from(other.origin));
-        let t = (e + d) / n_dot_r;
+        let t = (e + plane.d) / n_dot_r;
 
         let intersection_point = other.origin + other.direction * -t;
         self.closest_point(&intersection_point)

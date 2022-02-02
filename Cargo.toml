@@ -1,6 +1,6 @@
 [package]
 name = "mini-collide"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["Tristam MacDonald <tristam@trist.am>"]
 license = "Apache-2.0"
 description = "Lightweight collision routines for 3D graphics"
